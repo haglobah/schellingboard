@@ -14,7 +14,11 @@ COPY . .
 # Pass via --build-arg APP_VERSION=$(git describe --tags --always --dirty)
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
-RUN bun x next build
+RUN bun x next build && \
+    bun build --target=node --external better-sqlite3 --external bindings \
+        scripts/admin.ts --outfile=.next/standalone/scripts/admin.js && \
+    sed -i '1s|.*|#!/usr/bin/env node|' .next/standalone/scripts/admin.js && \
+    chmod +x .next/standalone/scripts/admin.js
 
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
