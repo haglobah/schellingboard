@@ -1,6 +1,16 @@
 import { test, expect } from "./helpers/fixtures";
 import { login } from "./helpers/auth";
 
+test.describe("Health endpoint", () => {
+  test("GET /api/health returns 200 without authentication", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/health");
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({ status: "ok" });
+  });
+});
+
 test.describe("Basic Sanity Checks", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);

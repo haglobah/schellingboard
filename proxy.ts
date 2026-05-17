@@ -4,8 +4,12 @@ import { requireAuth } from "./utils/auth";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow access to login page and auth API routes
-  if (pathname === "/login" || pathname.startsWith("/api/auth/")) {
+  // Allow access to login page, health check, and auth API routes
+  if (
+    pathname === "/login" ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/auth/")
+  ) {
     return NextResponse.next();
   }
 
