@@ -1,4 +1,4 @@
-.PHONY: help dev build start lint typecheck lint-watch test test-unit test-integration test-watch test-coverage test-e2e test-e2e-ci format format-check check-and-format dev-migrate-up dev-migrate-status dev-migrate-create dev-db-reset dev-admin install install-playwright clean clean-all
+.PHONY: help dev build start lint typecheck lint-watch test test-unit test-integration test-watch test-coverage test-e2e test-e2e-ci format format-check check-and-format dev-migrate-up dev-migrate-status dev-migrate-create dev-db-reset dev-admin install install-playwright clean clean-all docker-build
 
 SHELL := /bin/bash
 
@@ -39,6 +39,9 @@ help:
 	@echo "Dependencies:"
 	@echo "  make install          Install dependencies"
 	@echo "  make install-playwright Install Playwright browsers"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build     Build Docker image (tags with git describe output)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean            Remove dev and build artifacts as well as test output"
@@ -121,3 +124,6 @@ dev-db-reset: install
 
 dev-admin: install
 	bun set-env.ts dev bun x tsx scripts/admin.ts
+
+docker-build:
+	APP_VERSION=$$(git describe --tags --always --dirty) docker compose build
