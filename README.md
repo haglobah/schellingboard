@@ -19,7 +19,40 @@ This is a public open-source fork of [rachelweinberg12/scheduling-app](https://g
 
 ## Deployment
 
-SchellingBoard can be self-hosted on a server, but currently requires familiarity with Node.js/Bun. Docker support is coming soon for easier deployment. For now, follow the setup instructions in [CONTRIBUTING.md](CONTRIBUTING.md) to run it locally or on a server.
+The recommended way to self-host SchellingBoard is via Docker.
+
+```bash
+docker run -d \
+  --name schellingboard \
+  -p 3000:3000 \
+  -v schellingboard_data:/data \
+  -e SITE_PASSWORD=changeme \
+  -e AUTH_SECRET=$(openssl rand -hex 32) \
+  schellingboard/schellingboard
+```
+
+Or with `docker compose` — copy `docker-compose.yml` from this repo and run:
+
+```bash
+SITE_PASSWORD=changeme AUTH_SECRET=$(openssl rand -hex 32) docker compose up -d
+```
+
+### Environment variables
+
+| Variable        | Required | Description                                                      |
+| --------------- | -------- | ---------------------------------------------------------------- |
+| `SITE_PASSWORD` | No       | Password gate for the whole site (leave unset to disable)        |
+| `AUTH_SECRET`   | Yes      | Secret key for session signing (use a random 32-byte hex string) |
+| `DATABASE_URL`  | No       | SQLite path (default: `file:/data/data.db`)                      |
+| `HOST_PORT`     | No       | Host port to bind (default: `3000`, compose only)                |
+
+### Admin CLI
+
+Events, guests, and locations are managed through an interactive CLI:
+
+```bash
+docker exec -it <container_name> scripts/admin.js
+```
 
 ## Event Phases
 
