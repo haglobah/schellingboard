@@ -6,6 +6,7 @@ import clsx from "clsx";
 
 const LINKS: { href: string; label: string; exact?: boolean }[] = [
   { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/events", label: "Events" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/locations", label: "Locations" },
 ];

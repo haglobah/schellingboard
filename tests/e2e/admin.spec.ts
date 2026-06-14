@@ -80,7 +80,7 @@ test.describe("Admin UI", () => {
   });
 
   test("guards new admin routes when not authenticated", async ({ page }) => {
-    for (const path of ["/admin/users", "/admin/locations"]) {
+    for (const path of ["/admin/users", "/admin/locations", "/admin/events"]) {
       await page.goto(path);
       await expect(
         page.getByRole("heading", { name: "Admin Access" })
@@ -137,6 +137,51 @@ test.describe("Admin UI", () => {
     await expect(
       page.getByRole("listitem").filter({ hasText: email })
     ).toHaveCount(0);
+  });
+});
+
+test.describe("Admin UI events", () => {
+  test("lists existing events and can create a new one", async ({ page }) => {
+    await adminLogin(page);
+
+    await page
+      .getByRole("navigation", { name: "Admin" })
+      .getByRole("link", { name: "Events" })
+      .click();
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+
+    // Seeded events are listed
+    await expect(page.getByText("Conference Alpha")).toBeVisible();
+
+    // Create a new event
+    const unique = Date.now();
+    const eventName = `E2E Event ${unique}`;
+    await page.getByRole("button", { name: "New event" }).click();
+    await page.getByLabel("Name *").fill(eventName);
+    await page.getByLabel("Start *").fill("2026-10-01");
+    await page.getByLabel("End *").fill("2026-10-03");
+    await page.getByRole("button", { name: "Create event" }).click();
+
+    // New event appears in the list
+    const row = page.getByRole("listitem").filter({ hasText: eventName });
+    await expect(row).toBeVisible();
+
+    // Manage link navigates to the event detail page
+    await row.getByRole("link", { name: "Manage" }).click();
+    await expect(page).toHaveURL(/\/admin\/events\//);
+  });
+
+  test("shows validation error when end is before start", async ({ page }) => {
+    await adminLogin(page);
+    await page.goto("/admin/events");
+    await page.getByRole("button", { name: "New event" }).click();
+    await page.getByLabel("Name *").fill("Bad Dates Event");
+    await page.getByLabel("Start *").fill("2026-10-05");
+    await page.getByLabel("End *").fill("2026-10-01");
+    await page.getByRole("button", { name: "Create event" }).click();
+    await expect(
+      page.getByText(/end date must be after start date/i)
+    ).toBeVisible();
   });
 });
 
