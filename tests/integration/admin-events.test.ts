@@ -35,15 +35,39 @@ import {
 } from "../helpers/factories";
 import { getRepositories } from "@/db/container";
 import { VoteChoice } from "@/db/repositories/interfaces";
+import { createAdminAuthCookie } from "@/utils/auth";
+import {
+  createEventAction,
+  updateEventAction,
+  deleteEventAction,
+} from "@/app/actions/admin-events";
+
+const VALID_SECRET = "0123456789abcdef0123456789abcdef";
+
+async function loginAsAdmin() {
+  const c = await createAdminAuthCookie();
+  cookieJar.set(c.name, c.value);
+}
+
+const VALID_EVENT_INPUT = {
+  name: "Test Event",
+  description: "A description",
+  website: "https://example.com",
+  start: "2026-09-01",
+  end: "2026-09-03",
+  timezone: "Europe/Berlin",
+  maxSessionDuration: "60",
+};
 
 describe("events repo", () => {
   beforeAll(() => setupTestDb());
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetTestDb();
     cookieJar.clear();
     vi.stubEnv("ADMIN_PASSWORD", "admin-pw");
-    vi.stubEnv("AUTH_SECRET", "0123456789abcdef0123456789abcdef");
+    vi.stubEnv("AUTH_SECRET", VALID_SECRET);
+    await loginAsAdmin();
   });
 
   afterEach(() => vi.unstubAllEnvs());
@@ -137,6 +161,122 @@ describe("events repo", () => {
       await repos.events.delete(event.id);
 
       expect(await repos.sessions.findById(session.id)).toBeUndefined();
+    });
+  });
+});
+
+describe("event actions", () => {
+  beforeAll(() => setupTestDb());
+
+  beforeEach(async () => {
+    resetTestDb();
+    cookieJar.clear();
+    vi.stubEnv("ADMIN_PASSWORD", "admin-pw");
+    vi.stubEnv("AUTH_SECRET", VALID_SECRET);
+    await loginAsAdmin();
+  });
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  describe("authorization", () => {
+    it("rejects createEventAction without admin cookie", async () => {
+      cookieJar.clear();
+      const result = await createEventAction(VALID_EVENT_INPUT);
+      expect(!result.ok && result.error).toBe("Unauthorized");
+    });
+
+    it("rejects updateEventAction without admin cookie", async () => {
+      cookieJar.clear();
+      const event = await createEvent();
+      const result = await updateEventAction({
+        id: event.id,
+        ...VALID_EVENT_INPUT,
+      });
+      expect(!result.ok && result.error).toBe("Unauthorized");
+    });
+
+    it("rejects deleteEventAction without admin cookie", async () => {
+      cookieJar.clear();
+      const event = await createEvent();
+      const result = await deleteEventAction({ id: event.id });
+      expect(!result.ok && result.error).toBe("Unauthorized");
+      expect(await getRepositories().events.findById(event.id)).toBeDefined();
+    });
+  });
+
+  describe("createEventAction", () => {
+    it("creates an event", async () => {
+      const result = await createEventAction(VALID_EVENT_INPUT);
+      expect(result.ok).toBe(true);
+      const event = await getRepositories().events.findByName("Test Event");
+      expect(event).toMatchObject({
+        name: "Test Event",
+        timezone: "Europe/Berlin",
+      });
+    });
+
+    it("requires a name", async () => {
+      const result = await createEventAction({
+        ...VALID_EVENT_INPUT,
+        name: "  ",
+      });
+      expect(!result.ok && result.error).toBe("Name is required");
+    });
+
+    it("requires valid dates", async () => {
+      const result = await createEventAction({
+        ...VALID_EVENT_INPUT,
+        start: "not-a-date",
+      });
+      expect(!result.ok && result.error).toMatch(/invalid/i);
+    });
+
+    it("requires end after start", async () => {
+      const result = await createEventAction({
+        ...VALID_EVENT_INPUT,
+        start: "2026-09-05",
+        end: "2026-09-01",
+      });
+      expect(!result.ok && result.error).toMatch(
+        /end.*after.*start|start.*before.*end/i
+      );
+    });
+  });
+
+  describe("updateEventAction", () => {
+    it("updates an event", async () => {
+      const event = await createEvent({ name: "Old Name" });
+      const result = await updateEventAction({
+        id: event.id,
+        ...VALID_EVENT_INPUT,
+        name: "New Name",
+      });
+      expect(result.ok).toBe(true);
+      expect((await getRepositories().events.findById(event.id))?.name).toBe(
+        "New Name"
+      );
+    });
+
+    it("errors for unknown id", async () => {
+      const result = await updateEventAction({
+        id: "no-such-id",
+        ...VALID_EVENT_INPUT,
+      });
+      expect(!result.ok && result.error).toBe("Event not found");
+    });
+  });
+
+  describe("deleteEventAction", () => {
+    it("deletes an event", async () => {
+      const event = await createEvent();
+      const result = await deleteEventAction({ id: event.id });
+      expect(result.ok).toBe(true);
+      expect(await getRepositories().events.findById(event.id)).toBeUndefined();
+    });
+
+    it("errors for unknown id", async () => {
+      const result = await deleteEventAction({ id: "no-such-id" });
+      expect(!result.ok && result.error).toBe("Event not found");
     });
   });
 });
