@@ -40,6 +40,7 @@ import {
   createEventAction,
   updateEventAction,
   deleteEventAction,
+  updateEventPhasesAction,
 } from "@/app/actions/admin-events";
 
 const VALID_SECRET = "0123456789abcdef0123456789abcdef";
@@ -276,6 +277,61 @@ describe("event actions", () => {
 
     it("errors for unknown id", async () => {
       const result = await deleteEventAction({ id: "no-such-id" });
+      expect(!result.ok && result.error).toBe("Event not found");
+    });
+  });
+
+  describe("updateEventPhasesAction", () => {
+    it("sets phase dates", async () => {
+      const event = await createEvent();
+      const result = await updateEventPhasesAction({
+        id: event.id,
+        proposalPhaseStart: "2026-09-01T08:00",
+        proposalPhaseEnd: "2026-09-15T18:00",
+        votingPhaseStart: "2026-09-15T18:00",
+        votingPhaseEnd: "2026-09-30T18:00",
+      });
+      expect(result.ok).toBe(true);
+      const updated = await getRepositories().events.findById(event.id);
+      expect(updated?.proposalPhaseStart?.toISOString()).toBe(
+        "2026-09-01T08:00:00.000Z"
+      );
+      expect(updated?.proposalPhaseEnd?.toISOString()).toBe(
+        "2026-09-15T18:00:00.000Z"
+      );
+      expect(updated?.votingPhaseStart?.toISOString()).toBe(
+        "2026-09-15T18:00:00.000Z"
+      );
+      expect(updated?.votingPhaseEnd?.toISOString()).toBe(
+        "2026-09-30T18:00:00.000Z"
+      );
+    });
+
+    it("clears phase dates when empty strings provided", async () => {
+      const event = await createEvent({
+        proposalPhaseStart: new Date("2026-09-01T08:00:00Z"),
+        proposalPhaseEnd: new Date("2026-09-15T18:00:00Z"),
+      });
+      const result = await updateEventPhasesAction({
+        id: event.id,
+        proposalPhaseStart: "",
+        proposalPhaseEnd: "",
+      });
+      expect(result.ok).toBe(true);
+      const updated = await getRepositories().events.findById(event.id);
+      expect(updated?.proposalPhaseStart).toBeUndefined();
+      expect(updated?.proposalPhaseEnd).toBeUndefined();
+    });
+
+    it("rejects without admin cookie", async () => {
+      cookieJar.clear();
+      const event = await createEvent();
+      const result = await updateEventPhasesAction({ id: event.id });
+      expect(!result.ok && result.error).toBe("Unauthorized");
+    });
+
+    it("errors for unknown id", async () => {
+      const result = await updateEventPhasesAction({ id: "no-such-id" });
       expect(!result.ok && result.error).toBe("Event not found");
     });
   });

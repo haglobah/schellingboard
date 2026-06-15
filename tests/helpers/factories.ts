@@ -13,6 +13,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export async function createEvent(opts?: {
   phase?: "proposal" | "voting" | "scheduling";
   name?: string;
+  proposalPhaseStart?: Date;
+  proposalPhaseEnd?: Date;
+  votingPhaseStart?: Date;
+  votingPhaseEnd?: Date;
+  schedulingPhaseStart?: Date;
+  schedulingPhaseEnd?: Date;
 }): Promise<Event> {
   const { events } = getRepositories();
   const now = new Date();
@@ -57,12 +63,12 @@ export async function createEvent(opts?: {
     website: "",
     start,
     end,
-    proposalPhaseStart,
-    proposalPhaseEnd,
-    votingPhaseStart,
-    votingPhaseEnd,
-    schedulingPhaseStart,
-    schedulingPhaseEnd,
+    proposalPhaseStart: opts?.proposalPhaseStart ?? proposalPhaseStart,
+    proposalPhaseEnd: opts?.proposalPhaseEnd ?? proposalPhaseEnd,
+    votingPhaseStart: opts?.votingPhaseStart ?? votingPhaseStart,
+    votingPhaseEnd: opts?.votingPhaseEnd ?? votingPhaseEnd,
+    schedulingPhaseStart: opts?.schedulingPhaseStart ?? schedulingPhaseStart,
+    schedulingPhaseEnd: opts?.schedulingPhaseEnd ?? schedulingPhaseEnd,
     maxSessionDuration: 120,
     timezone: "UTC",
   });

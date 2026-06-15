@@ -108,6 +108,44 @@ export async function updateEventAction(
   return { ok: true };
 }
 
+export type EventPhasesInput = {
+  id: string;
+  proposalPhaseStart?: string;
+  proposalPhaseEnd?: string;
+  votingPhaseStart?: string;
+  votingPhaseEnd?: string;
+  schedulingPhaseStart?: string;
+  schedulingPhaseEnd?: string;
+};
+
+function parseDateTime(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  // datetime-local input gives "YYYY-MM-DDTHH:mm" without timezone; treat as UTC
+  const d = new Date(value + "Z");
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
+export async function updateEventPhasesAction(
+  input: EventPhasesInput
+): Promise<AdminActionResult> {
+  if (!(await isAdminRequest())) return { ok: false, error: "Unauthorized" };
+
+  const updated = await getRepositories().events.update(input.id, {
+    proposalPhaseStart: parseDateTime(input.proposalPhaseStart),
+    proposalPhaseEnd: parseDateTime(input.proposalPhaseEnd),
+    votingPhaseStart: parseDateTime(input.votingPhaseStart),
+    votingPhaseEnd: parseDateTime(input.votingPhaseEnd),
+    schedulingPhaseStart: parseDateTime(input.schedulingPhaseStart),
+    schedulingPhaseEnd: parseDateTime(input.schedulingPhaseEnd),
+  });
+  if (!updated) return { ok: false, error: "Event not found" };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/events");
+  revalidatePath(`/admin/events/${input.id}`);
+  return { ok: true };
+}
+
 export async function deleteEventAction(input: {
   id: string;
 }): Promise<AdminActionResult> {

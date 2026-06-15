@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getRepositories } from "@/db/container";
 import { requireAdminPage } from "../../require-admin";
 import { EventDetailForm } from "./event-detail-form";
+import { EventPhasesForm } from "./event-phases-form";
 
 export default async function AdminEventDetailPage({
   params,
@@ -27,6 +28,8 @@ export default async function AdminEventDetailPage({
       </div>
       <h1 className="text-2xl font-bold text-gray-900">{event.name}</h1>
       <EventDetailForm event={event} />
+      <hr className="border-gray-200" />
+      <EventPhasesForm event={event} />
     </div>
   );
 }

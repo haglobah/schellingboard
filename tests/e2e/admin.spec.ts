@@ -259,6 +259,64 @@ test.describe("Admin UI events", () => {
     await expect(page).toHaveURL(/\/admin\/events$/);
     await expect(page.getByText(eventName)).not.toBeVisible();
   });
+
+  test("can set and clear phase dates on the detail page", async ({ page }) => {
+    await adminLogin(page);
+    await page.goto("/admin/events");
+
+    // Create a throwaway event with no phases initially
+    const unique = Date.now();
+    const eventName = `E2E Phases ${unique}`;
+    await page.getByRole("button", { name: "New event" }).click();
+    await page.getByLabel("Name *").fill(eventName);
+    await page.getByLabel("Start *").fill("2026-10-01");
+    await page.getByLabel("End *").fill("2026-10-31");
+    await page.getByRole("button", { name: "Create event" }).click();
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: eventName })
+      .getByRole("link", { name: "Manage" })
+      .click();
+
+    // Set proposal phase start and end
+    const proposalGroup = page.getByRole("group", { name: "Proposal phase" });
+    await proposalGroup.getByLabel("Start").fill("2026-09-01T09:00");
+    await proposalGroup.getByLabel("End").fill("2026-09-15T17:00");
+    await page.getByRole("button", { name: "Save phases" }).click();
+    await expect(page.getByText("Saved!")).toBeVisible();
+
+    // Navigate away and back to confirm persistence
+    await page.goto("/admin/events");
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: eventName })
+      .getByRole("link", { name: "Manage" })
+      .click();
+    await expect(
+      page.getByRole("group", { name: "Proposal phase" }).getByLabel("Start")
+    ).toHaveValue("2026-09-01T09:00");
+    await expect(
+      page.getByRole("group", { name: "Proposal phase" }).getByLabel("End")
+    ).toHaveValue("2026-09-15T17:00");
+
+    // Clear the phase dates
+    await page
+      .getByRole("group", { name: "Proposal phase" })
+      .getByLabel("Start")
+      .fill("");
+    await page
+      .getByRole("group", { name: "Proposal phase" })
+      .getByLabel("End")
+      .fill("");
+    await page.getByRole("button", { name: "Save phases" }).click();
+    await expect(page.getByText("Saved!")).toBeVisible();
+
+    // Clean up
+    await page.getByRole("button", { name: "Delete event" }).click();
+    await page.getByLabel("Type the event name to confirm").fill(eventName);
+    await page.getByRole("button", { name: "Confirm delete" }).click();
+    await expect(page).toHaveURL(/\/admin\/events$/);
+  });
 });
 
 async function makeImage(width: number, height: number): Promise<Buffer> {
