@@ -88,12 +88,12 @@ export function EventDisplay() {
         />
       )}
       {view === "grid" ? (
-        // One scroll container for every day, so the room-name row and time
-        // gutter stay pinned (sticky) and each day's date in the corner is
-        // replaced by the next day's as you scroll past it.
+        // One large scroll container for everything:
+        // Time, room name and day are sticky, and every new day day+room names get replaced.
+        // - `dvh` (not `vh`) so the mobile address bar showing/hiding doesn't change the height.
         <div
           data-testid="schedule-scroll"
-          className="w-full overflow-auto max-h-[calc(100vh-4rem)] rounded-lg border border-gray-200"
+          className="w-full overflow-auto sticky top-16 max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-8rem)] rounded-lg border border-gray-200"
         >
           {daysForEvent.map((day) => (
             <DayGrid
