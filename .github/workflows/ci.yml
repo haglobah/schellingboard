@@ -107,4 +107,4 @@ jobs:
         run: bunx playwright install --with-deps firefox
 
       - name: E2E Tests
-        run: make test-e2e-ci
+        run: make test-e2e

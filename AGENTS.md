@@ -17,11 +17,11 @@ Next.js scheduling app for managing conference/event sessions with three phases:
 ## Version Control
 
 - Use `jj` (jujutsu) if available, otherwise `git`
-- Pre-commit: run `make check-and-format` to format, lint, type check, and run tests
+- Pre-commit: run `make precommit` to format, lint, type check, and run tests
 
 ## Testing
 
-- Always run tests with `make test` (not `bun test`); E2E tests with `make test-e2e-ci`
+- Always run tests with `make test` (not `bun test`); E2E tests with `make test-e2e`
 - Full test strategy and TDD rules are in [CONTRIBUTING.md § Testing](CONTRIBUTING.md#testing) — read it before writing any test
 
 ### Test tiers (short form)
@@ -35,7 +35,7 @@ Next.js scheduling app for managing conference/event sessions with three phases:
 Follow red → green → refactor strictly. **No skipping steps.**
 
 1. Write the failing test.
-2. Run `make test` or `make test-e2e-ci` and **confirm the failure output**.
+2. Run `make test` or `make test-e2e` and **confirm the failure output**.
 3. Implement the minimum code to pass.
 4. Run again and confirm green.
 5. Refactor without touching the test.

@@ -45,7 +45,7 @@
 3. (Optional) Seed the database with test data:
 
    ```bash
-   make dev-db-reset
+   make dev-db-seed
    ```
 
 4. Start the dev server:
@@ -116,7 +116,7 @@ make format   # Format code
 Before committing or pushing, run:
 
 ```bash
-make check-and-format  # Format, lint, type check, and run tests
+make precommit  # Format, lint, type check, and run tests
 ```
 
 ## Code Style
@@ -157,8 +157,8 @@ Every code change must follow red → green → refactor. **Do not skip or reord
 
 ```bash
 make test                # Run unit and integration tests (Vitest)
-make test-e2e            # Run E2E tests (headed, for local dev)
-make test-e2e-ci         # Run E2E tests (headless)
+make test-e2e            # Run E2E tests (headless)
+make test-e2e-headed     # Run E2E tests (headed, for local dev)
 ```
 
 **Warning**: E2E tests reset the test database before each run. Do not run against production data.
