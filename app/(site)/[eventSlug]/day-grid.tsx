@@ -75,19 +75,22 @@ export function DayGrid(props: {
         >
           <div className="p-1 h-full">
             <h3 className="font-semibold text-xs sm:text-sm">{loc.name}</h3>
-            <p className="text-[10px] text-gray-500">
-              {loc.areaDescription ?? <br />}
-            </p>
-            <p className="text-[10px] text-gray-500">
-              {loc.capacity ? `max ${loc.capacity}` : <br />}
-            </p>
           </div>
         </Tooltip>
       ))}
-
-      {/* Row 2 — location images. These deliberately scroll away with the body
-          (not sticky); only the empty gutter spacer stays pinned to the left so
-          the left column reads as one continuous strip. */}
+      {/* Row 2 — room description */}
+      <div className="sticky top-0 z-20 bg-white border-r border-gray-100" />
+      {includedLocations.map((loc) => (
+        <div key={loc.name} className="border-l border-gray-100 p-1">
+          <p className="text-[10px] text-gray-500">
+            {loc.areaDescription ?? <br />}
+          </p>
+          <p className="text-[10px] text-gray-500">
+            {loc.capacity ? `max ${loc.capacity}` : <br />}
+          </p>
+        </div>
+      ))}
+      {/* Row 3 — room images */}
       {hasImages && (
         <>
           <div className="sticky left-0 z-20 bg-white border-r border-gray-100" />
@@ -108,7 +111,7 @@ export function DayGrid(props: {
         </>
       )}
 
-      {/* Row 3 — body. The time gutter sticks to the left; each location renders
+      {/* Row 4 — body. The time gutter sticks to the left; each location renders
           its session blocks in a matching 44px-row grid so the times line up. */}
       <div
         className={clsx(
