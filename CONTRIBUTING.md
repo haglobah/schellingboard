@@ -197,3 +197,7 @@ Each E2E run starts from a clean database with 3 events (Alpha/Beta/Gamma) in di
 - Subject line ≤ 72 chars; explain WHY in the body if not obvious
 - Before committing, run `bun lint`, `bun format`, and `bun typecheck`
 - When working on a GitHub issue, add a footer: `issue #123` (partial work) or `fixes #123` (fully resolves it)
+
+## Pull Requests
+
+Self-review before submitting is mandatory — read your own diff, check for obvious mistakes, and make sure the PR description is accurate. Do not offload that work onto the reviewer. This is especially important when using AI agents, which can produce plausible-looking but incorrect code. Draft PRs are fine for sharing work-in-progress without that expectation.
